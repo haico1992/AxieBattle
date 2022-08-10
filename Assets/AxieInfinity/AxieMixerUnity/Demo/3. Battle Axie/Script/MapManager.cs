@@ -11,13 +11,13 @@ public class MapManager : MonoBehaviour
     public         int             width  = 10;
     public         int             height = 10;
     private        GameObject      mapObject;
-    private static List<BrickUnit> listAllBrick;
+    public static List<BrickUnit> listAllBrick;
 
-    public List<AxieUnit> listAllUnits
+    public static List<AxieUnit> listAllUnits
     {
         get
         {
-            return GameSceneManager.instance.listAllUnit;
+            return GameSceneManager.instance.listAllAxieUnit;
         }
     }
 
@@ -38,6 +38,7 @@ public class MapManager : MonoBehaviour
                     brick.GetComponent<BrickUnit>().SetType(BrickType.B);
                 }
                 listAllBrick.Add(brick.GetComponent<BrickUnit>());
+                brick.GetComponent<BrickUnit>().position = new Vector2(i, j);
             }
         }
     }
@@ -68,7 +69,7 @@ public class MapManager : MonoBehaviour
         return result;
     }
 
-    void Start()
+    public void Init()
     {
         mapObject = new GameObject("MapBricks");
         GenerateMap(width,height,mapObject.transform);

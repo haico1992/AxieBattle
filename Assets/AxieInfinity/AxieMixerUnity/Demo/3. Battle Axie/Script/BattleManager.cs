@@ -4,7 +4,16 @@ using UnityEngine;
 
 public class BattleManager : MonoBehaviour
 {
-  //Turn
-  
-  
+
+    public void SetTimeScale(float scale)
+    {
+        Time.timeScale = scale;
+    }
+
+    public void OnClickSpeedUpButton(float scale)
+    {
+        SetTimeScale(scale);
+    }
+
+
 }

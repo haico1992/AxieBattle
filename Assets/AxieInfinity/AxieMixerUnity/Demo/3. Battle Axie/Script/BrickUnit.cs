@@ -5,10 +5,16 @@ using UnityEngine;
 public class BrickUnit : MonoBehaviour
 {
     public  BrickType      type = BrickType.A;
-    public  Vector2        position { get { return _position; } }
+    public  Vector2        position {
+        get { return _position; }
+        set
+        {
+            this._position = value;
+        }
+    } 
     private Vector2        _position;
     public  AxieUnit       axieUnit = null;
-    public  AxieBattleUnit battleUnit;
+    //public  AxieBattleUnit battleUnit;
     public void SetType(BrickType type)
     {
         switch (type)
@@ -26,6 +32,12 @@ public class BrickUnit : MonoBehaviour
 
         this.type = type;
     }
+
+    public void UpdateCurrentAxie(AxieUnit unit)
+    {
+        this.axieUnit = unit;
+    }
+    
 
 
 }

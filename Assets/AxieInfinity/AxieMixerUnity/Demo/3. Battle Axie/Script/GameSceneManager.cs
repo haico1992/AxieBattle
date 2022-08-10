@@ -8,6 +8,7 @@ using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
+using Random = UnityEngine.Random;
 
 public class GameSceneManager : MonoBehaviour
 {
@@ -22,7 +23,7 @@ public class GameSceneManager : MonoBehaviour
     [SerializeField] 
     private AxieBattleUnit unitPrefab;
 
-    public List<AxieUnit> listAllUnit
+    public List<AxieUnit> listAllAxieUnit
     {
         get
         {
@@ -39,10 +40,31 @@ public class GameSceneManager : MonoBehaviour
             return result;
         }
     }
-    void RequestGenes()
+    
+    public List<AxieBattleUnit> listAllAxieBattleUnit
     {
-        StartCoroutine(GetAxiesGenes(attackerID,this.OnAxieDefenderGeneRequest));
-        StartCoroutine(GetAxiesGenes(defenderID,this.OnAxieAttackerGeneRequest));
+        get
+        {
+            List<AxieBattleUnit> result = new List<AxieBattleUnit>();
+            foreach (var unit  in this.listDefender)
+            {
+                result.Add(unit);
+            }
+            foreach (var unit  in this.ListAttacker)
+            {
+                result.Add(unit);
+            }
+
+            return result;
+        }
+    }
+    IEnumerator RequestGenes(UnityAction OnFinishAction = null)
+    {
+        var defenderRequest = StartCoroutine(GetAxiesGenes(defenderID,this.OnAxieDefenderGeneRequest));
+        var attackerRequest = StartCoroutine(GetAxiesGenes(attackerID,this.OnAxieAttackerGeneRequest));
+        yield return defenderRequest;
+        yield return attackerRequest;
+        if(OnFinishAction!=null) OnFinishAction.Invoke();
     }
 
     void Awake()
@@ -52,11 +74,34 @@ public class GameSceneManager : MonoBehaviour
     void Start()
     {
         Mixer.Init();
+        InitGamePlay();
     }
     [Button]
     public void InitGamePlay()
     {
-        RequestGenes();
+        MapManager.instance.Init();
+        this.StartCoroutine(this.RequestGenes(AfterInit));
+    }
+
+    void AfterInit()
+    {
+        DistributeAxie();
+        TurnBaseManager.instance.StartTurnLoop();
+    }
+
+    public void DistributeAxie()
+    {
+        var listAllPossibleSlot      = new List<BrickUnit>(MapManager.listAllBrick);
+        var listAllUndistributedAxie = new List<AxieUnit>(listAllAxieUnit);
+
+        foreach (var axieUnit in listAllUndistributedAxie)
+        {
+            var selectedSlot = Random.Range(0, listAllPossibleSlot.Count);
+            axieUnit.battleUnit.currentBrick = listAllPossibleSlot[selectedSlot];
+            axieUnit.battleUnit.SnapToCurrentBrick();
+            listAllPossibleSlot.RemoveAt(selectedSlot);
+        }
+        
     }
 
 
@@ -101,7 +146,15 @@ public class GameSceneManager : MonoBehaviour
         {
             var axieObj  = Instantiate(this.unitPrefab);
             var axieUnit = axieObj.GetComponent<AxieBattleUnit>();
-            listDefender.Add((axieUnit));
+            axieUnit.axieUnit               = new AxieUnit();
+            axieUnit.axieUnit.type          = AxieUnit.AxieCombatType.defender;
+            axieUnit.axieUnit.battleUnit    = axieUnit;
+            axieUnit.axieUnit.mobility      = 0;
+            axieUnit.teamIndex              = (int)AxieUnit.AxieCombatType.defender;
+            axieUnit.axieUnit.health        = Defines.DefaultValues.DefenderHealth;
+            axieUnit.axieUnit.currentHealth = Defines.DefaultValues.DefenderHealth;
+            axieUnit.Init();
+            this.listDefender.Add((axieUnit));
             axieUnit.SetupAxieByGene(id,gene);
         }
     }
@@ -109,10 +162,18 @@ public class GameSceneManager : MonoBehaviour
     void GenerateAttacker(string id, string gene)
     {
         if (unitPrefab == null) return;
-        for (int i = 0; i < this.defenderCount; i++)
+        for (int i = 0; i < this.attackerCount; i++)
         {
             var axieObj  = Instantiate(this.unitPrefab);
             var axieUnit = axieObj.GetComponent<AxieBattleUnit>();
+            axieUnit.axieUnit               = new AxieUnit();
+            axieUnit.axieUnit.type          = AxieUnit.AxieCombatType.attacker;
+            axieUnit.axieUnit.battleUnit    = axieUnit;
+            axieUnit.axieUnit.mobility      = 1;
+            axieUnit.teamIndex              = (int)AxieUnit.AxieCombatType.attacker;
+            axieUnit.axieUnit.health        = Defines.DefaultValues.AttackerHealth;
+            axieUnit.axieUnit.currentHealth = Defines.DefaultValues.AttackerHealth;
+            axieUnit.Init();
             this.ListAttacker.Add((axieUnit));
             axieUnit.SetupAxieByGene(id,gene);
         }

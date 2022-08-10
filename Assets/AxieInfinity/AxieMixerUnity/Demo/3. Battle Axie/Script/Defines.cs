@@ -14,8 +14,14 @@ public class Defines : MonoBehaviour
     public class AxieAnimString
     {
         public const string Attack  = "attack/melee/horn-gore";
-        public const string Defense = "defense/hit-by-normal";
         public const string Move    = "action/move-forward";
         public const string Idle    = "action/idle/normal";
+        public const string Dead    = "defense/hit-by-normal-dramatic";
+    }
+
+    public class DefaultValues
+    {
+        public const int DefenderHealth = 32;
+        public const int AttackerHealth = 16;
     }
 }

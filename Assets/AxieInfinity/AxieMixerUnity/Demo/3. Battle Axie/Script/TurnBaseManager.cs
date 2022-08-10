@@ -4,11 +4,18 @@ using UnityEngine;
 
 public class TurnBaseManager : MonoBehaviour
 {
-    private List<AxieBattleUnit> listBattleUnit;
+    private       List<AxieBattleUnit> listBattleUnit;
+    public static TurnBaseManager      instance;
+    public        float                turnTime = 2f;
 
+    void Awake()
+    {
+        instance = this;
+    }
 
     public void ExecuteTurnAI()
     {
+        listBattleUnit = GameSceneManager.instance.listAllAxieBattleUnit;
         foreach (var unit in this.listBattleUnit) // attack
         {
             unit.MakeDecision();
@@ -27,8 +34,18 @@ public class TurnBaseManager : MonoBehaviour
         foreach (var unit in this.listBattleUnit) // select animation based on result
         {
             unit.ExecuteAnimation();
+            unit.ExecuteUIAnimation();
+        }
+        foreach (var unit in this.listBattleUnit) // select animation based on result
+        {
+            unit.EndTurn();
         }
         
+    }
+
+    public void StartTurnLoop()
+    {
+        InvokeRepeating("ExecuteTurnAI",0,turnTime);
     }
 
 

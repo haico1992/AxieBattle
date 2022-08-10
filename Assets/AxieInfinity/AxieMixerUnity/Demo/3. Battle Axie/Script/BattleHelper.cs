@@ -16,9 +16,9 @@ public class BattleHelper : MonoBehaviour
     public static List<BrickUnit> GetSurroundingSquares(Vector2 position)
     {
         List<BrickUnit> listResult = new List<BrickUnit>();
-        for (int i = (int)position.x - 1; i < (int)position.x + 1; i++)
+        for (int i = (int)position.x - 1; i <= (int)position.x + 1; i++)
         {
-            for (int j = (int)position.y - 1;j < (int)position.y + 1; j++)
+            for (int j = (int)position.y - 1;j <= (int)position.y + 1; j++)
             { 
                 var brick = MapManager.GetBrickAtPosition(new Vector2(i, j));
                 if(brick) listResult.Add(brick);
@@ -39,7 +39,7 @@ public class BattleHelper : MonoBehaviour
         List<AxieUnit> listResult = new List<AxieUnit>();
         foreach (var brick in GetSurroundingSquares(brickUnit))
         {
-            if (brick.battleUnit != null)
+            if (brick.axieUnit != null)
             {
                 listResult.Add(brick.axieUnit);
             }
@@ -51,11 +51,13 @@ public class BattleHelper : MonoBehaviour
     {
         int      range  = Int32.MaxValue;
         AxieUnit result = null;
-        foreach (var unit in MapManager.instance.listAllUnits)
+        foreach (var unit in MapManager.listAllUnits)
         {
-            if (Distance(origin, unit) <= range)
+            var distance = Distance(origin, unit);
+            if ( distance<= range && origin!=unit && origin.battleUnit.teamIndex!=unit.battleUnit.teamIndex && !unit.battleUnit.isDead)
             {
                 result = unit;
+                range  = distance;
             }
         }
 
@@ -91,7 +93,7 @@ public class BattleHelper : MonoBehaviour
     public static List<AxieUnit> GetListUnitInRange(AxieUnit axieUnit, int range)
     {
         List<AxieUnit> listResult = new List<AxieUnit>();
-        foreach (var unit in MapManager.instance.listAllUnits)
+        foreach (var unit in MapManager.listAllUnits)
         {
            
             if (Distance(axieUnit, unit) <= range)
